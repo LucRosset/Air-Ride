@@ -1,0 +1,23 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class #SCRIPTNAME# : MonoBehaviour
+{
+	// CLASS VARIABLES
+	
+	// INHERITED METHODS
+
+	void Start()
+	{
+		#NOTRIM#
+	}
+
+	void Update()
+	{
+		#NOTRIM#
+	}
+
+	// CLASS METHODS
+
+}
