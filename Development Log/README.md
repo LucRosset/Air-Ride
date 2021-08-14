@@ -23,9 +23,7 @@ At least, for now, that's what I want to achieve with this project.
 
 I started this project a number of weeks ago but did not document it, so I will first describe what I did until today, then follow with the actual development diary.
 
-## Testing grounds
-[2021-08-08]
-
+## Test level
 First thing I did when I started this project was creating a place to have the machine running about for testing.
 I used the Pro Builder extension for Unity and it is quite easy to use, especially for prototyping terrain or simple objects.
 I created a box with some different shaped ramps to test the machine's movement and a machine that could kinda look like a warp star from Kirby.
@@ -33,6 +31,8 @@ I created a box with some different shaped ramps to test the machine's movement 
 That was some time ago.
 Back then I was building the code in a rather convoluted way, or at least it seemed so.
 I scrapped it and restarted the project with only the 3D models I created with Pro Builder.
+
+!(The test level and the test machine, named _Cobalt Star_.)[https://github.com/LucRosset/Air-Ride/tree/main/Development%20Log/Test%20level%202021-08-14.png]
 
 A week ago I started implementing Unity's new input system control scheme, instead of using the classic input manager.
 Unfortunately, Nintendo Switch Pro Controllers are not currently working with it, at least not as of this writing.
@@ -73,3 +73,22 @@ Maybe I'll do a more complex function for the `turnSpeed` instead of having it c
 ## Code architecture
 Right now, I only have a ground movement script for everything, but I also created a `MovementState` class to switch between movement schemes depending on the machine's state.
 I guess the next thing will be to set the machine to fall and to glide.
+
+[2021-08-14]
+
+I haven't done this yet, but I plan to separate the methods that accelerate, break and rotate the machine from the main movement script.
+This makes each movement script more consise and the parameters of methods can be swapped more easily and in a modular way.
+This will also make each machine a huge script container, since each movement script has several other scripts and there is at least two movement scripts: grounded and gliding/jumping.
+Oh well, I will start doing that once I finish the ground movement.
+
+Yeah, that would also make it muuuuch easier to implement machines with different mechanics, like using the boost charge to accelerate, not being able to turn while accelerating etc.
+_Boost_, by the way, is something that I feel like is very machine-specific.
+Some may add velocity to the current velocity, some may replace the velocity for another, some may keep adding velocity for some amount of time...
+Separating the movement modules will really make it easier to customize machines.
+
+## Acceleration, top speed and turning/drifting
+I have changed the acceleration to linearly interpolate towards the machine's facing (`Vector3.MoveTowards` instead of `Vector3.RotateTowards`) when the angle between the current velocity and the target velocity is larger than a threshold.
+I set the threshold to 30 degrees and it ended up correcting the problem of velocity vector taking too long to reach the machine's facing after a sharp turn or break.
+
+Added a very simple boost: when the break button is released, a boost method can be executed and, for now, it's just setting the velocity.
+Also added a velocity vector gizmo.

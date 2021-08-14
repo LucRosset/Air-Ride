@@ -10,33 +10,47 @@ public class MachineGroundMovement : MonoBehaviour
 
 	[Tooltip("Default top speed for the machine, in m/s.")]
 	[SerializeField] private float defaultTopSpeed = 10f;
-	[Tooltip("Current top speed for the machine, in m/s.")]
-	public float topSpeed;
+	///<summary>Current top speed for the machine, in m/s.</summary>
+	private float topSpeed;
 
 	[Tooltip("Default forward acceleration for the machine, in m/s2.")]
 	[SerializeField] private float defaultAcceleration = 10f;
-	[Tooltip("Current forward acceleration for the machine, in m/s2.")]
-	public float acceleration;
+	///<summary>Current forward acceleration for the machine, in m/s2.</summary>
+	private float acceleration;
 
 	[Tooltip("Default turn speed for the machine's velocity, in deg/s.")]
 	[SerializeField] private float defaultTurnSpeed = 40f;
-	[Tooltip("Current turn speed for the machine's velocity, in deg/s.")]
-	public float turnSpeed;
+	///<summary>Current turn speed for the machine's velocity, in deg/s.</summary>
+	private float turnSpeed;
 
 	[Tooltip("Default turn speed for the machine, in deg/s. A larger Facing Turn Speed than a Turn Speed creates drift.")]
 	[SerializeField] private float defaultFacingTurnSpeed = 50f;
-	[Tooltip("Current turn speed for the machine, in deg/s. A larger Facing Turn Speed than a Turn Speed creates drift.")]
-	public float facingTurnSpeed;
+	///<summary>Current turn speed for the machine, in deg/s. A larger Facing Turn Speed than a Turn Speed creates drift.</summary>
+	private float facingTurnSpeed;
+
+	[Tooltip("Limit to drift, in degrees.")]
+	[SerializeField] private float driftLimit = 30f;
+
+	[Tooltip("Default gravity acceleration, in m/s2.")]
+	[SerializeField] private float defaultGravityAcceleration = 1f;
+	///<summary>Current gravity acceleration, in m/s2.</summary>
+	private float gravityAcceleration;
 
 	[Tooltip("Breaking acceleration, in m/s2.")]
 	[SerializeField] private float breakAcceleration = 5f;
 	[Tooltip("Downward velocity when breaking airborne, in m/s.")]
 	[SerializeField] private float fallSpeed = 20f;
 
+	[Tooltip("Default velocity right after boosting, in m/s.")]
+	[SerializeField] private float defaultBoostVelocity = 40f;
+	///<summary>Current velocity right after boosting, in m/s.</summary>
+	private float boostVelocity;
+
 	private MachineControls control;
 	///<summary>x components refers to yaw, y component refers to pitch.</summary>
 	private Vector2 yawPitch;
-	private bool breaking;
+	private bool breaking = false;
+	private bool boosting = false;
 
 	private Rigidbody myRigidbody;
 	private Collider myCollider;
@@ -52,7 +66,10 @@ public class MachineGroundMovement : MonoBehaviour
 		control.Player.Move.performed += context => yawPitch = context.ReadValue<Vector2>();
 		control.Player.Move.canceled += context => yawPitch = Vector2.zero;
 		control.Player.Break.performed += context => breaking = context.ReadValueAsButton();
-		control.Player.Break.canceled += context => breaking = false;
+		control.Player.Break.canceled += context => {
+			breaking = false;
+			boosting = true;
+		};
 	}
 
 	void Start()
@@ -64,16 +81,24 @@ public class MachineGroundMovement : MonoBehaviour
 		acceleration = defaultAcceleration;
 		turnSpeed = defaultTurnSpeed;
 		facingTurnSpeed = defaultFacingTurnSpeed;
+		gravityAcceleration = defaultGravityAcceleration;
+		boostVelocity = defaultBoostVelocity;
 	}
 
 	void FixedUpdate()
 	{
 		Pitch();
 		Turn();
-		if (breaking)
+		if (boosting)
+		{
+			boosting = false;
+			Boost();
+		}
+		else if (breaking)
 			AccelerateTowards(Vector3.zero, breakAcceleration);
 		else
 			AccelerateTowards(transform.forward * topSpeed, acceleration);
+		GravityAccelerate();
 	}
 
 	void Update()
@@ -108,14 +133,44 @@ public class MachineGroundMovement : MonoBehaviour
 		transform.Rotate(Vector3.up * yawPitch.x * facingTurnSpeed * Time.fixedDeltaTime);
 	}
 
+	private void Boost()
+	{
+		myRigidbody.velocity = transform.forward * boostVelocity;
+		boosting = false;
+	}
+
 	private void AccelerateTowards(Vector3 targetSpeed, float linearAcceleration)
 	{
-		myRigidbody.velocity = Vector3.RotateTowards(
-			myRigidbody.velocity,
-			targetSpeed,
-			turnSpeed * Mathf.Deg2Rad * Time.fixedDeltaTime,
-			linearAcceleration * Time.fixedDeltaTime
-		);
+		if (Vector3.Angle(myRigidbody.velocity, targetSpeed) > driftLimit)
+		{
+			myRigidbody.velocity = Vector3.MoveTowards(
+				myRigidbody.velocity,
+				targetSpeed,
+				linearAcceleration * Time.fixedDeltaTime
+			);
+		}
+		else
+		{
+			myRigidbody.velocity = Vector3.RotateTowards(
+				myRigidbody.velocity,
+				targetSpeed,
+				turnSpeed * Mathf.Deg2Rad * Time.fixedDeltaTime,
+				linearAcceleration * Time.fixedDeltaTime
+			);
+		}
+	}
+
+	private void GravityAccelerate()
+	{
+		myRigidbody.velocity += Vector3.down * gravityAcceleration * Time.fixedDeltaTime;
+	}
+
+	// DEBUG
+
+	void OnDrawGizmosSelected()
+	{
+		Gizmos.color = Color.green;
+		Gizmos.DrawLine(transform.position, transform.position + myRigidbody.velocity);
 	}
 
 	public float GetVelocity() { return myRigidbody.velocity.magnitude; }
