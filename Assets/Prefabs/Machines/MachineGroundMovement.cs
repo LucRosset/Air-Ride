@@ -8,26 +8,31 @@ public class MachineGroundMovement : MonoBehaviour
 {
 	// CLASS VARIABLES
 
+	//
 	[Tooltip("Default top speed for the machine, in m/s.")]
 	[SerializeField] private float defaultTopSpeed = 10f;
 	///<summary>Current top speed for the machine, in m/s.</summary>
 	private float topSpeed;
 
+	//
 	[Tooltip("Default forward acceleration for the machine, in m/s2.")]
 	[SerializeField] private float defaultAcceleration = 10f;
 	///<summary>Current forward acceleration for the machine, in m/s2.</summary>
 	private float acceleration;
 
+	//
 	[Tooltip("Default turn speed for the machine's velocity, in deg/s.")]
 	[SerializeField] private float defaultTurnSpeed = 40f;
 	///<summary>Current turn speed for the machine's velocity, in deg/s.</summary>
 	private float turnSpeed;
 
+	//
 	[Tooltip("Default turn speed for the machine, in deg/s. A larger Facing Turn Speed than a Turn Speed creates drift.")]
 	[SerializeField] private float defaultFacingTurnSpeed = 50f;
 	///<summary>Current turn speed for the machine, in deg/s. A larger Facing Turn Speed than a Turn Speed creates drift.</summary>
 	private float facingTurnSpeed;
 
+	//
 	[Tooltip("Limit to drift, in degrees.")]
 	[SerializeField] private float driftLimit = 30f;
 
@@ -36,6 +41,7 @@ public class MachineGroundMovement : MonoBehaviour
 	///<summary>Current gravity acceleration, in m/s2.</summary>
 	private float gravityAcceleration;
 
+	//
 	[Tooltip("Braking acceleration, in m/s2.")]
 	[SerializeField] private float brakeAcceleration = 5f;
 	[Tooltip("Downward velocity when braking airborne, in m/s.")]
@@ -95,21 +101,15 @@ public class MachineGroundMovement : MonoBehaviour
 	void FixedUpdate()
 	{
 		Pitch();
-		Turn();
+		YawTurn(yawPitch.x);
 		if (boosting)
 		{
 			boosting = false;
 			Boost();
 		}
-		else if (braking)
-		{
-			AccelerateTowards(transform.forward * Mathf.Epsilon, brakeAcceleration);
+		AccelerateTowards(braking);
+		if (braking)
 			ChargeBoost();
-		}
-		else
-		{
-			AccelerateTowards(transform.forward * topSpeed, acceleration);
-		}
 		GravityAccelerate();
 	}
 
@@ -140,9 +140,9 @@ public class MachineGroundMovement : MonoBehaviour
 
 	}
 
-	private void Turn()
+	private void YawTurn(float yaw)
 	{
-		transform.Rotate(Vector3.up * yawPitch.x * facingTurnSpeed * Time.fixedDeltaTime);
+		transform.Rotate(Vector3.up * yaw * facingTurnSpeed * Time.fixedDeltaTime);
 	}
 
 	private void ChargeBoost()
@@ -160,8 +160,20 @@ public class MachineGroundMovement : MonoBehaviour
 		boosting = false;
 	}
 
-	private void AccelerateTowards(Vector3 targetSpeed, float linearAcceleration)
+	private void AccelerateTowards(bool braking)
 	{
+		Vector3 targetSpeed;
+		float linearAcceleration;
+		if (braking)
+		{
+			linearAcceleration = brakeAcceleration;
+			targetSpeed = transform.forward * Mathf.Epsilon;
+		}
+		else
+		{
+			linearAcceleration = acceleration;
+			targetSpeed = transform.forward * topSpeed;
+		}
 		if (Vector3.Angle(myRigidbody.velocity, targetSpeed) > driftLimit)
 		{
 			myRigidbody.velocity = Vector3.MoveTowards(
