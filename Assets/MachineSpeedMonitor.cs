@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class MachineMonitor : MonoBehaviour
+public class MachineSpeedMonitor : MonoBehaviour
 {
 	// CLASS VARIABLES
 	
-	[SerializeField] MachineGroundMovement movement = null;
+	[SerializeField] private MachineGroundMovement movement = null;
 
 	private TextMeshProUGUI myText;
 

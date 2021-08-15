@@ -9,12 +9,12 @@ Maybe I can make it into a good guide on how to make a game project, who knows?
 I will discuss here concept ideas for the project, its goals and some technical stuff.
 
 Anyway, this is a study project on recreating the movement mechanics of Kirby Air Ride, a game very dear to me.
-My goal is to try and build the game step-by-step, begining from the movement of the machines on ground, flying, breaking, charging and boosting.
+My goal is to try and build the game step-by-step, begining from the movement of the machines on ground, flying, braking, charging and boosting.
 Machines are the "ships" from the original game. I will continue to call the ones in this projects machines as well (please don't sue me, Nintendo).
 
 For a second phase, I want to split development into two fronts:
 (i) fine-tune some different machines, as well as allow them to have power-ups and status bonuses and
-(ii) make some animations and effects, like rolling the machine when turning, spinning it around or tossing it up when damaged and adding effects when it boosts, breaks and glides.
+(ii) make some animations and effects, like rolling the machine when turning, spinning it around or tossing it up when damaged and adding effects when it boosts, brakes and glides.
 
 Allowing for multiplayer would be awesome, too.
 I will look into that once I have a playable sandbox!
@@ -48,7 +48,7 @@ I was reluctant, but today (finally, caught up!) it turned out great!
 
 ## Acceleration, top speed and turning/drifting
 To accelerate, I first tried using the `Vector3.MoveTowards` method, which worked perfectly.
-I'd set the velocity to be moved towards the `transform.forward * topSpeed` and the machine would move and break smoothly!
+I'd set the velocity to be moved towards the `transform.forward * topSpeed` and the machine would move and brake smoothly!
 
 To turn, I used the `Vector3.RotateTowards` method, which is similar to `MoveTowards`, to change the machine's facing and the velocity's direction.
 It worked wonderfully, but it was very stiff...
@@ -66,7 +66,7 @@ The first turns the machine's model (and camera) and sets the goal direction for
 Drift achieved!
 
 The larger the difference between turning deltas, the more a machine drifts.
-Now the ground movement can be quite well tuned, but I still want to implement more details, like changing the turning speeds when breaking.
+Now the ground movement can be quite well tuned, but I still want to implement more details, like changing the turning speeds when braking.
 There is also still some work to do on syncing up the speed direction when the machine is slow.
 Maybe I'll do a more complex function for the `turnSpeed` instead of having it constant.
 
@@ -76,7 +76,7 @@ I guess the next thing will be to set the machine to fall and to glide.
 
 [2021-08-14]
 
-I haven't done this yet, but I plan to separate the methods that accelerate, break and rotate the machine from the main movement script.
+I haven't done this yet, but I plan to separate the methods that accelerate, brake and rotate the machine from the main movement script.
 This makes each movement script more consise and the parameters of methods can be swapped more easily and in a modular way.
 This will also make each machine a huge script container, since each movement script has several other scripts and there is at least two movement scripts: grounded and gliding/jumping.
 Oh well, I will start doing that once I finish the ground movement.
@@ -88,7 +88,11 @@ Separating the movement modules will really make it easier to customize machines
 
 ## Acceleration, top speed and turning/drifting
 I have changed the acceleration to linearly interpolate towards the machine's facing (`Vector3.MoveTowards` instead of `Vector3.RotateTowards`) when the angle between the current velocity and the target velocity is larger than a threshold.
-I set the threshold to 30 degrees and it ended up correcting the problem of velocity vector taking too long to reach the machine's facing after a sharp turn or break.
+I set the threshold to 30 degrees and it ended up correcting the problem of velocity vector taking too long to reach the machine's facing after a sharp turn or brake.
 
-Added a very simple boost: when the break button is released, a boost method can be executed and, for now, it's just setting the velocity.
-Also added a velocity vector gizmo.
+Added a very simple boost method: when the brake button is pressed, a gauge starts filling up at a specific rate.
+When the brake is released, a boost method is executed and, for now, it's just adding to the velocity (with `Vector3.ClampMagnitude` to avoid huge boosts).
+Also added a velocity vector gizmo and a simple boost gauge.
+
+Next, I will modularize the movement script, as I mentined.
+After that, add pitch and machine orientation to the mix, then switch to flight/glide.

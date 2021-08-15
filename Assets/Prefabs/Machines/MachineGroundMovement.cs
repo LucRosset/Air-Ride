@@ -46,13 +46,19 @@ public class MachineGroundMovement : MonoBehaviour
 	///<summary>Current velocity right after boosting, in m/s.</summary>
 	private float boostVelocity;
 
+	[Tooltip("Default charge rate, in %/s.")]
+	[SerializeField] private float defaultChargeRate = .5f;
+	///<summary>Current charge rate, in %/s.</summary>
+	private float chargeRate;
+
 	private MachineControls control;
 	///<summary>x components refers to yaw, y component refers to pitch.</summary>
 	private Vector2 yawPitch;
 	private bool breaking = false;
 	private bool boosting = false;
+	private float chargePercent = 0f;
 
-	private Rigidbody myRigidbody;
+	private Rigidbody myRigidbody = null;
 	private Collider myCollider;
 
 	// Provisory
@@ -83,6 +89,7 @@ public class MachineGroundMovement : MonoBehaviour
 		facingTurnSpeed = defaultFacingTurnSpeed;
 		gravityAcceleration = defaultGravityAcceleration;
 		boostVelocity = defaultBoostVelocity;
+		chargeRate = defaultChargeRate;
 	}
 
 	void FixedUpdate()
@@ -95,9 +102,14 @@ public class MachineGroundMovement : MonoBehaviour
 			Boost();
 		}
 		else if (breaking)
-			AccelerateTowards(Vector3.zero, breakAcceleration);
+		{
+			AccelerateTowards(transform.forward * Mathf.Epsilon, breakAcceleration);
+			ChargeBoost();
+		}
 		else
+		{
 			AccelerateTowards(transform.forward * topSpeed, acceleration);
+		}
 		GravityAccelerate();
 	}
 
@@ -133,9 +145,18 @@ public class MachineGroundMovement : MonoBehaviour
 		transform.Rotate(Vector3.up * yawPitch.x * facingTurnSpeed * Time.fixedDeltaTime);
 	}
 
+	private void ChargeBoost()
+	{
+		chargePercent = Mathf.Clamp01(chargePercent + chargeRate * Time.fixedDeltaTime);
+	}
+
 	private void Boost()
 	{
-		myRigidbody.velocity = transform.forward * boostVelocity;
+		myRigidbody.velocity = Vector3.ClampMagnitude(
+			myRigidbody.velocity + transform.forward * boostVelocity * chargePercent * chargePercent,
+			boostVelocity
+		);
+		chargePercent = 0f;
 		boosting = false;
 	}
 
@@ -165,13 +186,20 @@ public class MachineGroundMovement : MonoBehaviour
 		myRigidbody.velocity += Vector3.down * gravityAcceleration * Time.fixedDeltaTime;
 	}
 
+	// UI
+
+	public float GetVelocity() { return myRigidbody.velocity.magnitude; }
+
+	public float GetCurrentCharge() { return chargePercent; }
+
 	// DEBUG
 
 	void OnDrawGizmosSelected()
 	{
-		Gizmos.color = Color.green;
-		Gizmos.DrawLine(transform.position, transform.position + myRigidbody.velocity);
+		if (myRigidbody != null)
+		{
+			Gizmos.color = Color.green;
+			Gizmos.DrawLine(transform.position, transform.position + myRigidbody.velocity);
+		}
 	}
-
-	public float GetVelocity() { return myRigidbody.velocity.magnitude; }
 }
