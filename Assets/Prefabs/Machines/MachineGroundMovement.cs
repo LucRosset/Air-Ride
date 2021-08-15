@@ -36,9 +36,9 @@ public class MachineGroundMovement : MonoBehaviour
 	///<summary>Current gravity acceleration, in m/s2.</summary>
 	private float gravityAcceleration;
 
-	[Tooltip("Breaking acceleration, in m/s2.")]
-	[SerializeField] private float breakAcceleration = 5f;
-	[Tooltip("Downward velocity when breaking airborne, in m/s.")]
+	[Tooltip("Braking acceleration, in m/s2.")]
+	[SerializeField] private float brakeAcceleration = 5f;
+	[Tooltip("Downward velocity when braking airborne, in m/s.")]
 	[SerializeField] private float fallSpeed = 20f;
 
 	[Tooltip("Default velocity right after boosting, in m/s.")]
@@ -54,7 +54,7 @@ public class MachineGroundMovement : MonoBehaviour
 	private MachineControls control;
 	///<summary>x components refers to yaw, y component refers to pitch.</summary>
 	private Vector2 yawPitch;
-	private bool breaking = false;
+	private bool braking = false;
 	private bool boosting = false;
 	private float chargePercent = 0f;
 
@@ -71,9 +71,9 @@ public class MachineGroundMovement : MonoBehaviour
 		control = new MachineControls();
 		control.Player.Move.performed += context => yawPitch = context.ReadValue<Vector2>();
 		control.Player.Move.canceled += context => yawPitch = Vector2.zero;
-		control.Player.Break.performed += context => breaking = context.ReadValueAsButton();
-		control.Player.Break.canceled += context => {
-			breaking = false;
+		control.Player.Brake.performed += context => braking = context.ReadValueAsButton();
+		control.Player.Brake.canceled += context => {
+			braking = false;
 			boosting = true;
 		};
 	}
@@ -101,9 +101,9 @@ public class MachineGroundMovement : MonoBehaviour
 			boosting = false;
 			Boost();
 		}
-		else if (breaking)
+		else if (braking)
 		{
-			AccelerateTowards(transform.forward * Mathf.Epsilon, breakAcceleration);
+			AccelerateTowards(transform.forward * Mathf.Epsilon, brakeAcceleration);
 			ChargeBoost();
 		}
 		else
