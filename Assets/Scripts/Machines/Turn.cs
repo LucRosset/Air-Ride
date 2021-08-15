@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Turn : MonoBehaviour
+public class Turn : MonoBehaviour, ITurn
 {
 	// CLASS VARIABLES
 
@@ -15,12 +15,7 @@ public class Turn : MonoBehaviour
 
 	void Start()
 	{
-		
-	}
-
-	void Update()
-	{
-		
+		facingTurnSpeed = defaultFacingTurnSpeed;
 	}
 
 	// CLASS METHODS

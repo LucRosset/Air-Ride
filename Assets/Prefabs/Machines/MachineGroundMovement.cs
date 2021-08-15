@@ -47,11 +47,13 @@ public class MachineGroundMovement : MonoBehaviour
 	[Tooltip("Downward velocity when braking airborne, in m/s.")]
 	[SerializeField] private float fallSpeed = 20f;
 
+	//
 	[Tooltip("Default velocity right after boosting, in m/s.")]
 	[SerializeField] private float defaultBoostVelocity = 40f;
 	///<summary>Current velocity right after boosting, in m/s.</summary>
 	private float boostVelocity;
 
+	//
 	[Tooltip("Default charge rate, in %/s.")]
 	[SerializeField] private float defaultChargeRate = .5f;
 	///<summary>Current charge rate, in %/s.</summary>
@@ -62,7 +64,7 @@ public class MachineGroundMovement : MonoBehaviour
 	private Vector2 yawPitch;
 	private bool braking = false;
 	private bool boosting = false;
-	private float chargePercent = 0f;
+	private float charge = 0f;
 
 	private Rigidbody myRigidbody = null;
 	private Collider myCollider;
@@ -102,31 +104,20 @@ public class MachineGroundMovement : MonoBehaviour
 	{
 		Pitch();
 		YawTurn(yawPitch.x);
+		if (braking)
+			ChargeBoost();
 		if (boosting)
 		{
 			boosting = false;
 			Boost();
 		}
 		AccelerateTowards(braking);
-		if (braking)
-			ChargeBoost();
 		GravityAccelerate();
 	}
 
-	void Update()
-	{
-		
-	}
+	void OnEnable() { control.Player.Enable(); }
 
-	void OnEnable()
-	{
-		control.Player.Enable();
-	}
-
-	void OnDisable()
-	{
-		control.Player.Disable();
-	}
+	void OnDisable() { control.Player.Disable(); }
 
 	void OnCollisionStay(Collision other)
 	{
@@ -147,17 +138,16 @@ public class MachineGroundMovement : MonoBehaviour
 
 	private void ChargeBoost()
 	{
-		chargePercent = Mathf.Clamp01(chargePercent + chargeRate * Time.fixedDeltaTime);
+		charge = Mathf.Clamp01(charge + chargeRate * Time.fixedDeltaTime);
 	}
 
 	private void Boost()
 	{
 		myRigidbody.velocity = Vector3.ClampMagnitude(
-			myRigidbody.velocity + transform.forward * boostVelocity * chargePercent * chargePercent,
+			myRigidbody.velocity + transform.forward * boostVelocity * charge * charge,
 			boostVelocity
 		);
-		chargePercent = 0f;
-		boosting = false;
+		charge = 0f;
 	}
 
 	private void AccelerateTowards(bool braking)
@@ -202,7 +192,7 @@ public class MachineGroundMovement : MonoBehaviour
 
 	public float GetVelocity() { return myRigidbody.velocity.magnitude; }
 
-	public float GetCurrentCharge() { return chargePercent; }
+	public float GetCurrentCharge() { return charge; }
 
 	// DEBUG
 

@@ -96,3 +96,15 @@ Also added a velocity vector gizmo and a simple boost gauge.
 
 Next, I will modularize the movement script, as I mentined.
 After that, add pitch and machine orientation to the mix, then switch to flight/glide.
+
+[2021-08-15]
+
+Modularizing takes a lot of effort, between restructuring some parameters and variables and the fear that having to scrap your work because it is not working as it was before.
+For now, I only created an Accelerate, Boost and Turn modules.
+There will probably be a Pitch module as well.
+
+The gliding or flying movement will probably have some some refactoring involved as well to fit with everything.
+But I am optimistic that, the way I've made the acceleration method, it will integrate nicely.
+
+The gravity needs to be reworked, though.
+Right now it's basically a constant velocity down... :| It should carry over from the previous (fixed) update.
