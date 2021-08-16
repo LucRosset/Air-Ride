@@ -7,7 +7,7 @@ public class MachineChargeMonitor : MonoBehaviour
 {
 	// CLASS VARIABLES
 
-	[SerializeField] private MachineGroundMovement movement = null;
+	[SerializeField] private Boost boost = null;
 
 	private Slider slider;
 	
@@ -20,7 +20,7 @@ public class MachineChargeMonitor : MonoBehaviour
 
 	void Update()
 	{
-		slider.value = movement.GetCurrentCharge();
+		slider.value = boost.charge;
 	}
 
 	// CLASS METHODS

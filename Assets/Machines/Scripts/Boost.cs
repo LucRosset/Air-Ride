@@ -26,6 +26,7 @@ public class Boost : MonoBehaviour, IBoost
 		myRigidbody = GetComponent<Rigidbody>();
 
 		chargeRate = defaultChargeRate;
+		boostVelocity = defaultBoostVelocity;
 	}
 
 	// CLASS METHODS
@@ -37,10 +38,12 @@ public class Boost : MonoBehaviour, IBoost
 
 	public void StartBoost()
 	{
+		Vector3 currentSpeedNormal = transform.up * Vector3.Dot(transform.up, myRigidbody.velocity);
+		Vector3 currentSpeedTangential = myRigidbody.velocity - currentSpeedNormal;
 		myRigidbody.velocity = Vector3.ClampMagnitude(
-			myRigidbody.velocity + transform.forward * boostVelocity * charge * charge,
+			currentSpeedTangential + transform.forward * boostVelocity * charge * charge,
 			boostVelocity
-		);
+		) + currentSpeedNormal;
 		charge = 0f;
 	}
 }

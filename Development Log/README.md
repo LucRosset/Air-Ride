@@ -106,5 +106,17 @@ There will probably be a Pitch module as well.
 The gliding or flying movement will probably have some some refactoring involved as well to fit with everything.
 But I am optimistic that, the way I've made the acceleration method, it will integrate nicely.
 
-The gravity needs to be reworked, though.
+## Gravity is still not good...
+The gravity needs to be reworked.
 Right now it's basically a constant velocity down... :| It should carry over from the previous (fixed) update.
+
+[Later]
+
+Gravity in the ground movement fixed through (what I believe is) a simple concept:
+Whenever a method accelerates the machine _forward_ (that is, towards the `transform.forward`), it first decomposes the velocity into tangential and normal (in respect to the ground).
+The tangential velocity is transformed, then the normal velocity is added back.
+That seems to solve having the forward acceleration and turning immediately correcting the gravity.
+
+## Nonrigid camera follow
+I swapped the cinemachine camera aim to a _Composer_, which allows some angle changes and, most interestingly, adding some elasticity to the camera distance.
+I found that having some sudden distancing of the machine from the camera when it boosts forward is very satisfying!

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+///<summary>Turns machine over its normal.</summary>
 public class Turn : MonoBehaviour, ITurn
 {
 	// CLASS VARIABLES

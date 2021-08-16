@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+///<summary>Accelerates machine orthogonally to the its normal.</summary>
 public class Accelerate : MonoBehaviour, IAccelerate
 {
 	// CLASS VARIABLES
@@ -46,8 +47,10 @@ public class Accelerate : MonoBehaviour, IAccelerate
 
 	public void AccelerateMachine(bool braking)
 	{
-		Vector3 targetSpeed;
 		float linearAcceleration;
+		Vector3 targetSpeed;
+		Vector3 currentSpeedNormal = transform.up * Vector3.Dot(transform.up, myRigidbody.velocity);
+		Vector3 currentSpeedTangential = myRigidbody.velocity - currentSpeedNormal;
 		
 		if (braking)
 		{
@@ -63,19 +66,19 @@ public class Accelerate : MonoBehaviour, IAccelerate
 		if (Vector3.Angle(myRigidbody.velocity, targetSpeed) > driftLimit)
 		{
 			myRigidbody.velocity = Vector3.MoveTowards(
-				myRigidbody.velocity,
+				currentSpeedTangential,
 				targetSpeed,
 				linearAcceleration * Time.fixedDeltaTime
-			);
+			) + currentSpeedNormal;
 		}
 		else
 		{
 			myRigidbody.velocity = Vector3.RotateTowards(
-				myRigidbody.velocity,
+				currentSpeedTangential,
 				targetSpeed,
 				turnSpeed * Mathf.Deg2Rad * Time.fixedDeltaTime,
 				linearAcceleration * Time.fixedDeltaTime
-			);
+			) + currentSpeedNormal;
 		}
 	}
 }
